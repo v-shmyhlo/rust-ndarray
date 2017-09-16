@@ -12,17 +12,11 @@
 extern crate rand;
 extern crate ndarray;
 
-use std::iter::FromIterator;
-
 use rand::Rng;
 use rand::distributions::Sample;
 use rand::distributions::IndependentSample;
 
-use ndarray::{
-    ArrayBase,
-    Dimension,
-    DataOwned,
-};
+use ndarray::{ArrayBase, Dimension, DataOwned};
 use ndarray::ShapeBuilder;
 
 /// Constructors for n-dimensional arrays with random elements.
@@ -32,8 +26,9 @@ use ndarray::ShapeBuilder;
 ///
 /// The default Rng is a fast automatically seeded rng (currently `rand::weak_rng`).
 pub trait RandomExt<S, D>
-    where S: DataOwned,
-          D: Dimension,
+where
+    S: DataOwned,
+    D: Dimension,
 {
     /// Create an array with shape `dim` with elements drawn from
     /// `distribution`  using the default rng.
@@ -57,38 +52,41 @@ pub trait RandomExt<S, D>
     /// //  [  0.0914,   5.5186,   5.8135,   5.2361,   3.1879]]
     /// # }
     fn random<Sh, IdS>(shape: Sh, distribution: IdS) -> ArrayBase<S, D>
-        where IdS: IndependentSample<S::Elem>,
-              Sh: ShapeBuilder<Dim=D>;
+    where
+        IdS: IndependentSample<S::Elem>,
+        Sh: ShapeBuilder<Dim = D>;
 
     /// Create an array with shape `dim` with elements drawn from
     /// `distribution`, using a specific Rng `rng`.
     ///
     /// ***Panics*** if the number of elements overflows usize.
     fn random_using<Sh, IdS, R>(shape: Sh, distribution: IdS, rng: &mut R) -> ArrayBase<S, D>
-        where IdS: IndependentSample<S::Elem>,
-              R: Rng,
-              Sh: ShapeBuilder<Dim=D>;
+    where
+        IdS: IndependentSample<S::Elem>,
+        R: Rng,
+        Sh: ShapeBuilder<Dim = D>;
 }
 
 impl<S, D> RandomExt<S, D> for ArrayBase<S, D>
-    where S: DataOwned,
-          D: Dimension,
+where
+    S: DataOwned,
+    D: Dimension,
 {
     fn random<Sh, IdS>(shape: Sh, dist: IdS) -> ArrayBase<S, D>
-        where IdS: IndependentSample<S::Elem>,
-              Sh: ShapeBuilder<Dim=D>,
+    where
+        IdS: IndependentSample<S::Elem>,
+        Sh: ShapeBuilder<Dim = D>,
     {
         Self::random_using(shape, dist, &mut rand::weak_rng())
     }
 
     fn random_using<Sh, IdS, R>(shape: Sh, dist: IdS, rng: &mut R) -> ArrayBase<S, D>
-        where IdS: IndependentSample<S::Elem>,
-              R: Rng,
-              Sh: ShapeBuilder<Dim=D>,
+    where
+        IdS: IndependentSample<S::Elem>,
+        R: Rng,
+        Sh: ShapeBuilder<Dim = D>,
     {
-        let shape = shape.into_shape();
-        let elements = Vec::from_iter((0..shape.size()).map(move |_| dist.ind_sample(rng)));
-        Self::from_shape_vec(shape, elements).unwrap()
+        Self::from_shape_fn(shape, |_| dist.ind_sample(rng))
     }
 }
 
@@ -114,17 +112,25 @@ impl<S, D> RandomExt<S, D> for ArrayBase<S, D>
 pub struct F32<S>(pub S);
 
 impl<S> Sample<f32> for F32<S>
-    where S: Sample<f64>
+where
+    S: Sample<f64>,
 {
-    fn sample<R>(&mut self, rng: &mut R) -> f32 where R: Rng {
+    fn sample<R>(&mut self, rng: &mut R) -> f32
+    where
+        R: Rng,
+    {
         self.0.sample(rng) as f32
     }
 }
 
 impl<S> IndependentSample<f32> for F32<S>
-    where S: IndependentSample<f64>
+where
+    S: IndependentSample<f64>,
 {
-    fn ind_sample<R>(&self, rng: &mut R) -> f32 where R: Rng {
+    fn ind_sample<R>(&self, rng: &mut R) -> f32
+    where
+        R: Rng,
+    {
         self.0.ind_sample(rng) as f32
     }
 }

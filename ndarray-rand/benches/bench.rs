@@ -5,7 +5,6 @@ extern crate ndarray;
 extern crate ndarray_rand;
 extern crate test;
 
-use rand::distributions::Range;
 use rand::distributions::Normal;
 use ndarray::Array;
 use ndarray_rand::RandomExt;
@@ -17,7 +16,7 @@ use test::Bencher;
 fn norm_f32(b: &mut Bencher) {
     let m = 100;
     b.iter(|| {
-        let a = Array::random((m, m), F32(Normal::new(0., 1.)));
+        let a: Array<f32, _> = Array::random((m, m), F32(Normal::new(0., 1.)));
         a
     });
 }
@@ -26,7 +25,7 @@ fn norm_f32(b: &mut Bencher) {
 fn norm_f64(b: &mut Bencher) {
     let m = 100;
     b.iter(|| {
-        let a = Array::random((m, m), (Normal::new(0., 1.)));
+        let a: Array<f64, _> = Array::random((m, m), Normal::new(0., 1.));
         a
     });
 }
